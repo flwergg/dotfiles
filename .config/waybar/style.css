@@ -1,0 +1,123 @@
+window#waybar {
+    background: transparent;
+    border: none;
+    color: white;
+    font-family: "Hack Nerd Font", monospace;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 0;
+    margin: 0;
+}
+
+.modules-left,
+.modules-center,
+.modules-right {
+    margin: 0 0;
+    padding: 0;
+}
+
+/* General Style*/
+#workspaces,
+#window,
+#pulseaudio,
+#backlight,
+#cpu,
+#network,
+#battery,
+#clock,
+#tray,
+#custom-wlogout {
+    background: rgba(20, 20, 20, 0.4);
+    border-radius: 999px;
+    padding: 1px 12px;
+    margin: 2px 2px; 
+    font-weight: bold;
+    color: white;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    
+}
+
+/* Hover Effect */
+#workspaces:hover,
+#window:hover,
+#pulseaudio:hover,
+#backlight:hover,
+#cpu:hover,
+#network:hover,
+#battery:hover,
+#clock:hover,
+#tray:hover,
+#custom-wlogout:hover {
+    background-color: rgba(255, 255, 255, 0.08); 
+    color: #ffffff;
+}
+
+/* Slightly tighter inner spacing as well */
+label {
+    padding: 0 2px;
+    margin: 0;
+}
+
+/* Poweroff button */
+#custom-wlogout {
+    padding: 2px 6px;
+    min-width: 24px;
+    margin: 2px 2px;
+    border-radius: 999px;
+}
+
+/* Battery */
+#battery {
+    color: white;
+}
+
+#battery.warning {
+    color: #ffcc00;
+}
+
+#battery.warning:hover {
+    color: #ffffff; 
+    background-color: #ffcc00;
+}
+
+#battery.critical {
+    color: #ff6b6b; 
+    font-weight: bold;
+    animation: blink 1s step-start infinite;
+}
+
+#battery.critical:hover {
+    color: #ffffff; 
+    background-color: #ff6b6b;
+}
+
+/* Workspaces */
+#workspaces button {
+    background: transparent;
+    color: white;
+    border-radius: 999px;
+    padding: 1px 8px;
+    margin: 0 2px;
+    border: 1px solid transparent;
+    font-weight: bold;
+}
+
+#workspaces button.active {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(229, 185, 198, 1.0);
+}
+
+#workspaces button.urgent {
+    background: rgba(255, 0, 0, 0.6);
+}
+
+/* Tooltip */
+tooltip {
+    background: rgba(30, 30, 30, 0.8);
+    color: white;
+    border-radius: 9px;
+    padding: 5px 8px;
+    font-size: 12px;
+    font-weight: bold;
+}
