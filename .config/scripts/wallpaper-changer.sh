@@ -1,5 +1,5 @@
 #!/bin/bash
-WALLPAPER_DIR="$HOME/Pictures/Wallpapers" 
+WALLPAPER_DIR="$HOME/Pictures/Fonditos" 
 INTERVAL=1800
 INDEX_FILE="$HOME/.config/swww_index"
 

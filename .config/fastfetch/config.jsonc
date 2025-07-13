@@ -33,7 +33,9 @@
     {
       "type": "packages",
       "key": "  󰏗 Packages",
-      "keyColor": "green"
+      "keyColor": "green",
+      "format": "{pacman} (pacman)"
+
     },
     {
       "type": "terminal",
@@ -81,7 +83,7 @@
       "key": "  󰈀 Disk ",
       "folders": "/",
       "keyColor": "magenta",
-      "format": "{1} / {2} ({3}%)"
+      "format": "{1} / {2} ({3})"
     },
     {
       "type": "uptime",

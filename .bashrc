@@ -11,6 +11,9 @@ alias ll='lsd -l'
 alias ..='cd ..'
 alias ...='cd ../..'
 alias r='source ~/.bashrc'
+alias clean-packages='sudo pacman -Rns $(pacman -Qdtq)'
+alias clean-pacman='sudo paccache -rk1 && sudo paccache -ruk0 && yay -Sc --noconfirm && flatpak uninstall --unused -y'
+alias update-all='yay -Syu && flatpak update'
 
 #Prompt
 PS1='\[\e[1;38;5;218m\]\u\[\e[0m\] \[\e[38;5;15m\]\W ❯ \[\e[0m\]'

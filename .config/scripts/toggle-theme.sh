@@ -4,8 +4,8 @@
 THEME_LIGHT="catppuccin-latte-flamingo-standard+default"
 CURSOR_LIGHT="catppuccin-latte-flamingo-cursors"
 
-THEME_DARK="catppuccin-mocha-maroon-standard+default"
-CURSOR_DARK="catppuccin-mocha-maroon-cursors"
+THEME_DARK="catppuccin-mocha-flamingo-standard+default"
+CURSOR_DARK="catppuccin-mocha-flamingo-cursors"
 
 INDEX_PATH="$HOME/.icons/default/index.theme"
 
