@@ -4,11 +4,11 @@
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 HOME_DIR="$HOME"
 
-echo "Creating symbolic links from $DOTFILES_DIR to $HOME_DIR"
+echo "Copying dotfiles from $DOTFILES_DIR to $HOME_DIR"
 
-# Symlink config files and folders
-ln -sf "$DOTFILES_DIR/.bashrc" "$HOME_DIR/.bashrc"
-ln -sf "$DOTFILES_DIR/.config" "$HOME_DIR/.config"
+# Copy config files and folders (overwriting if exist)
+cp -r "$DOTFILES_DIR/.bashrc" "$HOME_DIR/.bashrc"
+cp -r "$DOTFILES_DIR/.config" "$HOME_DIR/.config"
 
 # Copy wallpapers
 WALLPAPER_DIR="$HOME_DIR/Pictures/Fonditos"
