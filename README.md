@@ -37,6 +37,7 @@ fastfetch rofimoji cava htop nerd-fonts
 ```bash
 git clone https://github.com/flwergg/dotfiles.git
 cd dotfiles
+chmod +x install.sh 
 ./install.sh
 ```
 

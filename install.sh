@@ -4,7 +4,7 @@
 DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
 HOME_DIR="$HOME"
 
-echo "🔗 Creating symbolic links from $DOTFILES_DIR to $HOME_DIR"
+echo "Creating symbolic links from $DOTFILES_DIR to $HOME_DIR"
 
 # Symlink config files and folders
 ln -sf "$DOTFILES_DIR/.bashrc" "$HOME_DIR/.bashrc"
@@ -15,5 +15,5 @@ WALLPAPER_DIR="$HOME_DIR/Pictures/Fonditos"
 mkdir -p "$WALLPAPER_DIR"
 cp -r "$DOTFILES_DIR/Wallpapers/"* "$WALLPAPER_DIR/"
 
-echo "🖼️ Wallpapers copied to $WALLPAPER_DIR"
-echo "✅ Setup complete."
+echo "Wallpapers copied to $WALLPAPER_DIR"
+echo "Setup complete <3"
