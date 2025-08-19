@@ -17,6 +17,7 @@ if [[ "$CURRENT_THEME" == "$THEME_LIGHT" ]]; then
     gsettings set org.gnome.desktop.interface gtk-theme "$THEME_DARK"
     gsettings set org.gnome.desktop.interface icon-theme "Papirus-Dark"
     gsettings set org.gnome.desktop.interface cursor-theme "$CURSOR_DARK"
+    gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
     echo -e "[Icon Theme]\nInherits=$CURSOR_DARK" > "$INDEX_PATH"
     hyprctl setcursor "$CURSOR_DARK" 24
     notify-send "🌙 Night Mode On"
@@ -26,6 +27,7 @@ else
     gsettings set org.gnome.desktop.interface gtk-theme "$THEME_LIGHT"
     gsettings set org.gnome.desktop.interface icon-theme "Papirus-Light"
     gsettings set org.gnome.desktop.interface cursor-theme "$CURSOR_LIGHT"
+    gsettings set org.gnome.desktop.interface color-scheme 'default'
     echo -e "[Icon Theme]\nInherits=$CURSOR_LIGHT" > "$INDEX_PATH"
     hyprctl setcursor "$CURSOR_LIGHT" 24
     notify-send "🌞 Light Mode On"
