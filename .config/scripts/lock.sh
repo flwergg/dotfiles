@@ -14,7 +14,7 @@ swaylock \
   --effect-blur 7x5 \
   --clock \
   --timestr "%H:%M" \
-  --datestr "Hola, $USER <3" \
+  --datestr "Hi, $USER <3" \
   --indicator \
   --indicator-radius 120 \
   --indicator-thickness 12 \
