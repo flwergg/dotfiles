@@ -1,10 +1,10 @@
 #!/bin/bash
 
-WALLPAPER=$(sed -n '2p' ~/.cache/swww/eDP-1)
+WALLPAPER=$(tr '\0' '\n' < ~/.cache/swww/eDP-1 | grep '^/')
 
 # If the wallpaper file does not exist, use a default wallpaper
 if [[ ! -f "$WALLPAPER" ]]; then
-  WALLPAPER="/Pictures/Wallpaper/sailormoon2.jpg"
+  WALLPAPER="~/Pictures/Fonditos/sailormoon2.jpg"
 fi
 
 # Play a sound when locking the screen
@@ -28,5 +28,5 @@ swaylock \
   --ring-wrong-color f38ba8 \
   --inside-wrong-color 1e1e2e \
   --text-wrong-color f38ba8 \
-  --image "$WALLPAPER" 
-  --grace 2 --grace-no-mouse --grace-no-touch
+  --image "$WALLPAPER" \
+  --grace 0 --grace-no-mouse --grace-no-touch

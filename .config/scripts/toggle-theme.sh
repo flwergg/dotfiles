@@ -27,7 +27,7 @@ else
     gsettings set org.gnome.desktop.interface gtk-theme "$THEME_LIGHT"
     gsettings set org.gnome.desktop.interface icon-theme "Papirus-Light"
     gsettings set org.gnome.desktop.interface cursor-theme "$CURSOR_LIGHT"
-    gsettings set org.gnome.desktop.interface color-scheme 'default'
+    gsettings set org.gnome.desktop.interface color-scheme 'prefer-light'
     echo -e "[Icon Theme]\nInherits=$CURSOR_LIGHT" > "$INDEX_PATH"
     hyprctl setcursor "$CURSOR_LIGHT" 24
     notify-send "🌞 Light Mode On"
