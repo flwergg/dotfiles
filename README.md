@@ -25,11 +25,11 @@ It’s soft, cute, minimal, and perfect for everyday cozy hacking ✨
 ## 📦 Things I use
 
 ```ini
-hyprland kitty waybar wofi dunst nemo
-wlogout wlsunset swaylock-effects swappy  
-catppuccin-gtk-theme catppuccin-cursors papirus-icon-theme  
-pipewire wireplumber playerctl pamixer brightnessctl  
-fastfetch rofimoji cava htop nerd-fonts  
+hyprland kitty waybar wofi dunst nemo awww
+wlogout wlsunset swaylock-effects swappy
+catppuccin-gtk-theme catppuccin-cursors papirus-icon-theme
+pipewire wireplumber playerctl pamixer brightnessctl
+fastfetch rofimoji cava htop nerd-fonts pywal
 ```
 
 ## 🧚 If you want to use it
@@ -37,7 +37,7 @@ fastfetch rofimoji cava htop nerd-fonts
 ```bash
 git clone https://github.com/flwergg/dotfiles.git
 cd dotfiles
-chmod +x install.sh 
+chmod +x install.sh
 ./install.sh
 ```
 

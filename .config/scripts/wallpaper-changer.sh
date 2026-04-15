@@ -1,7 +1,7 @@
 #!/bin/bash
 WALLPAPER_DIR="$HOME/Pictures/Fonditos" 
 INTERVAL=1800
-INDEX_FILE="$HOME/.config/swww_index"
+INDEX_FILE="$HOME/.config/awww_index"
 
 change_wallpaper() {
     # Create array with images sorted alphabetically
@@ -28,7 +28,8 @@ change_wallpaper() {
     WALLPAPER="${WALLPAPERS[$CURRENT_INDEX]}"
     
     # Change wallpaper
-    swww img "$WALLPAPER" --transition-type fade --transition-duration 2
+    awww img "$WALLPAPER" --transition-type fade --transition-duration 2
+    wal -i "$WALLPAPER" --backend colortheif
     echo "$(date): Fondo #$CURRENT_INDEX: $(basename "$WALLPAPER")"
     
     # Save next index
