@@ -1,6 +1,6 @@
 #!/bin/bash
 
-WALLPAPER=$(tr '\0' '\n' < ~/.cache/swww/eDP-1 | grep '^/')
+WALLPAPER=$(tr '\0' '\n' < ~/.cache/awww/0.12.0/eDP-1 | grep '^/')
 
 # If the wallpaper file does not exist, use a default wallpaper
 if [[ ! -f "$WALLPAPER" ]]; then

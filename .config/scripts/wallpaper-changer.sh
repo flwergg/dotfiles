@@ -30,6 +30,8 @@ change_wallpaper() {
     # Change wallpaper
     awww img "$WALLPAPER" --transition-type fade --transition-duration 2
     wal -i "$WALLPAPER" --backend colortheif
+    cp ~/.cache/wal/colors-swaync.css ~/.config/swaync/style.css
+    pkill -SIGUSR1 swaync
     echo "$(date): Fondo #$CURRENT_INDEX: $(basename "$WALLPAPER")"
     
     # Save next index
