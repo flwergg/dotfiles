@@ -14,7 +14,12 @@ alias clean-pacman='sudo paccache -rk1 && sudo paccache -ruk0 && yay -Sc --nocon
 alias update-all='yay -Syu && flatpak update'
 
 # ─────────── Prompt ───────────
-PROMPT='%B%F{218}%n%b%f %F{15}%1~ ❯ %f'
+autoload -Uz vcs_info
+precmd() { vcs_info }
+zstyle ':vcs_info:git:*' formats '%F{225}%b%f '
+setopt PROMPT_SUBST
+
+PROMPT='%B%F{218}%n%b%f %F{15}%1~ ${vcs_info_msg_0_}❯ %f'
 
 # ─────────── Historial ───────────
 HISTSIZE=10000
@@ -24,12 +29,16 @@ HISTFILE=~/.zsh_history
 setopt APPEND_HISTORY
 setopt SHARE_HISTORY
 setopt HIST_IGNORE_DUPS
-setopt HIST_IGNORE_ALL_DUPS
+# setopt HIST_IGNORE_ALL_DUPS  # comentado para analizar frecuencia, descomentar después
 setopt HIST_FIND_NO_DUPS
 
 source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source /usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring-search.zsh
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
 
+eval "$(zoxide init zsh)"
 autoload -Uz compinit
 compinit
 
