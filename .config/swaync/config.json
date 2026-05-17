@@ -25,13 +25,9 @@
   "hide-on-clear": true,
   "hide-on-action": true,
   "script-fail-notify": true,
-  
-  "widgets": [
-    "title",
-    "dnd",
-    "notifications"
-  ],
-  
+
+  "widgets": ["title", "dnd", "notifications"],
+
   "widget-config": {
     "title": {
       "text": "Notifications",

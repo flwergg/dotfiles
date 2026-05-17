@@ -1,7 +1,7 @@
 # If not running interactively, don't do anything
 [[ -o interactive ]] || return
 
-# ─────────── Aliases ───────────
+# Aliases 
 alias grep='grep --color=auto'
 alias cat='bat'
 alias ls='lsd'
@@ -13,7 +13,7 @@ alias clean-packages='sudo pacman -Rns $(pacman -Qdtq)'
 alias clean-pacman='sudo paccache -rk1 && sudo paccache -ruk0 && yay -Sc --noconfirm && flatpak uninstall --unused -y'
 alias update-all='yay -Syu && flatpak update'
 
-# ─────────── Prompt ───────────
+# Prompt 
 autoload -Uz vcs_info
 precmd() { vcs_info }
 zstyle ':vcs_info:git:*' formats '%F{225}%b%f '
@@ -21,7 +21,7 @@ setopt PROMPT_SUBST
 
 PROMPT='%B%F{218}%n%b%f %F{15}%1~ ${vcs_info_msg_0_}❯ %f'
 
-# ─────────── Historial ───────────
+# Historial 
 HISTSIZE=10000
 SAVEHIST=20000
 HISTFILE=~/.zsh_history

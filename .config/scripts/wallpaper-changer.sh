@@ -32,6 +32,8 @@ change_wallpaper() {
     wal -i "$WALLPAPER" --backend colortheif
     cp ~/.cache/wal/colors-swaync.css ~/.config/swaync/style.css
     pkill -SIGUSR1 swaync
+
+    qs ipc call reloadColors reload 
     echo "$(date): Fondo #$CURRENT_INDEX: $(basename "$WALLPAPER")"
     
     # Save next index
