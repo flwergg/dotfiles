@@ -4,6 +4,7 @@
 set -e
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BACKUP_DIR="$HOME/.dotfiles-backup-$(date +%s)"
 
 # Colors
 RED='\033[0;31m'
@@ -26,8 +27,11 @@ echo "  │     arch + hyprland          │"
 echo "  ╰──────────────────────────────╯"
 echo -e "${NC}"
 
-#  Check: not root 
+# Check: not root
 [ "$EUID" -eq 0 ] && error "don't run this as root"
+
+# Check: arch
+[[ ! -f /etc/arch-release ]] && error "this is for arch btw"
 
 # Check: yay
 section "Checking AUR helper"
@@ -42,9 +46,9 @@ else
     success "yay found"
 fi
 
-# Packages 
+# Packages
 section "Installing packages"
- 
+
 PACMAN_PACKAGES=(
     # Core Hyprland
     hyprland
@@ -52,7 +56,7 @@ PACMAN_PACKAGES=(
     xdg-desktop-portal-gtk
     hypridle
     hyprpicker
- 
+
     # Audio
     pipewire
     pipewire-alsa
@@ -64,9 +68,8 @@ PACMAN_PACKAGES=(
     playerctl
     mpd
     mpc
-    mpd-mpris
     cava
- 
+
     # Wayland utils
     grim
     slurp
@@ -74,26 +77,27 @@ PACMAN_PACKAGES=(
     wl-clipboard
     cliphist
     wlsunset
-    mesa
- 
+
     # Network & Bluetooth
     networkmanager
     network-manager-applet
     blueman
     bluez
     bluez-utils
- 
-    # Terminal
+
+    # Terminal & shell
     kitty
     zsh
-    zoxide
- 
+    zsh-autosuggestions
+    zsh-syntax-highlighting
+    zsh-history-substring-search
+
     # Notifications
     swaync
- 
+
     # Quickshell
     quickshell
- 
+
     # Theming
     python-pywal
     qt5ct
@@ -102,32 +106,35 @@ PACMAN_PACKAGES=(
     papirus-icon-theme
     nwg-look
     polkit-gnome
- 
+
     # Fonts
     ttf-jetbrains-mono-nerd
     noto-fonts
     noto-fonts-emoji
- 
+
     # System utils
     brightnessctl
     acpi
     upower
     fastfetch
     htop
+    bat
+    lsd
+    zoxide
     jq
     curl
     git
- 
+
     # Apps
     nemo
     mpv
     gpu-screen-recorder
 )
- 
+
 AUR_PACKAGES=(
     awww
     swaylock-effects
-    zsh-history-substring-search
+    mpd-mpris
 )
 
 log "Installing pacman packages..."
@@ -140,11 +147,15 @@ yay -S --needed --noconfirm "${AUR_PACKAGES[@]}" \
     || warn "Some AUR packages failed — check manually"
 success "AUR packages done"
 
+# Enable services
+section "Enabling services"
+sudo systemctl enable --now NetworkManager 2>/dev/null && success "NetworkManager"
+sudo systemctl enable --now bluetooth 2>/dev/null && success "bluetooth"
+
 # Directories 
 section "Creating directories"
 
 DIRS=(
-    "$HOME/.config/quickshell/assets/pfps"
     "$HOME/.config/quickshell/assets/gifs"
     "$HOME/.config/quickshell/files"
     "$HOME/Pictures/Fonditos"
@@ -158,14 +169,17 @@ for dir in "${DIRS[@]}"; do
     success "$dir"
 done
 
-# Copy dotfiles
+# Copy dotfiles (with backup)
 section "Copying dotfiles"
+mkdir -p "$BACKUP_DIR"
+log "Existing configs backed up to $BACKUP_DIR"
 
 copy_config() {
     local src="$DOTFILES_DIR/.config/$1"
     local dst="$HOME/.config/$1"
     if [ -e "$src" ]; then
         mkdir -p "$(dirname "$dst")"
+        [ -e "$dst" ] && mv "$dst" "$BACKUP_DIR/$1"
         cp -r "$src" "$dst"
         success "$1"
     else
@@ -182,17 +196,12 @@ copy_config "fastfetch"
 copy_config "htop"
 copy_config "mpv"
 copy_config "wal"
+copy_config "scripts"
 
-# zshrc
 if [ -f "$DOTFILES_DIR/.zshrc" ]; then
+    [ -f "$HOME/.zshrc" ] && mv "$HOME/.zshrc" "$BACKUP_DIR/.zshrc"
     cp "$DOTFILES_DIR/.zshrc" "$HOME/.zshrc"
     success ".zshrc"
-fi
-
-# Scripts
-if [ -d "$DOTFILES_DIR/.config/scripts" ]; then
-    cp -r "$DOTFILES_DIR/.config/scripts" "$HOME/.config/scripts"
-    success "scripts"
 fi
 
 # Script permissions
@@ -205,7 +214,7 @@ else
     warn "scripts folder not found"
 fi
 
-# Wallpapers 
+# Wallpapers
 section "Wallpapers"
 if [ -d "$DOTFILES_DIR/Wallpapers" ] && [ "$(ls -A "$DOTFILES_DIR/Wallpapers" 2>/dev/null)" ]; then
     cp -r "$DOTFILES_DIR/Wallpapers/." "$HOME/Pictures/Fonditos/"
@@ -224,13 +233,13 @@ else
 fi
 
 # Done
-echo -e "\n${PINK}Done! :3${NC}"
+echo -e "\n${PINK}── Done! ─────────────────────────────${NC}"
 echo ""
 echo -e "  Things to do manually:"
-echo -e "  ${YELLOW}·${NC} Add your gif to ~/.config/quickshell/assets/gifs/ (rename to the name of the gif).gif"
+echo -e "  ${YELLOW}·${NC} Add your gif to ~/.config/quickshell/assets/gifs/ (rename to current.gif)"
 echo -e "  ${YELLOW}·${NC} Set up Plymouth and SDDM"
 echo -e "  ${YELLOW}·${NC} Install Catppuccin GTK + cursor themes"
 echo -e "  ${YELLOW}·${NC} Log out and log back in for zsh to take effect"
 echo ""
-echo -e "  ${GREEN}enjoy your setup! <3${NC}"
+echo -e "  ${GREEN}enjoy your setup! ✨${NC}"
 echo ""
