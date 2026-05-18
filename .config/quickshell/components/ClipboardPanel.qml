@@ -78,8 +78,7 @@ PanelWindow {
 
     Process {
         id: listProc
-        // last 100 entries
-        command: ["bash", "-c", "cliphist list | head -n 100"]
+        command: ["bash", "-c", "cliphist list"]
         stdout: SplitParser {
             onRead: data => {
                 var line = data.trim()
