@@ -74,6 +74,7 @@ PACMAN_PACKAGES=(
     wl-clipboard
     cliphist
     wlsunset
+    mesa
  
     # Network & Bluetooth
     networkmanager
@@ -85,6 +86,7 @@ PACMAN_PACKAGES=(
     # Terminal
     kitty
     zsh
+    zoxide
  
     # Notifications
     swaync
@@ -125,6 +127,7 @@ PACMAN_PACKAGES=(
 AUR_PACKAGES=(
     awww
     swaylock-effects
+    zsh-history-substring-search
 )
 
 log "Installing pacman packages..."
