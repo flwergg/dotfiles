@@ -31,7 +31,7 @@ PanelWindow {
 
         Rectangle {
             anchors.fill: parent
-            color: Qt.rgba(root.walBackground.r, root.walBackground.g, root.walBackground.b, 0.7)
+            color: Qt.rgba(root.walBackground.r, root.walBackground.g, root.walBackground.b, 0.5)
             radius: 20
 
             ColumnLayout {

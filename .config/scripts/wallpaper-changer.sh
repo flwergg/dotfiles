@@ -29,6 +29,7 @@ change_wallpaper() {
     
     # Change wallpaper
     awww img "$WALLPAPER" --transition-type fade --transition-duration 2
+    qs ipc call randomwallpaper apply "$WALLPAPER"
     wal -i "$WALLPAPER" --backend colortheif
     cp ~/.cache/wal/colors-swaync.css ~/.config/swaync/style.css
     pkill -SIGUSR1 swaync
