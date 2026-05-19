@@ -156,12 +156,8 @@ sudo systemctl enable --now bluetooth 2>/dev/null && success "bluetooth"
 section "Creating directories"
 
 DIRS=(
-    "$HOME/.config/quickshell/assets/gifs"
-    "$HOME/.config/quickshell/files"
     "$HOME/Pictures/Fonditos"
     "$HOME/Pictures/Screenshots"
-    "$HOME/screen-recordings"
-    "$HOME/wallpapers"
 )
 
 for dir in "${DIRS[@]}"; do

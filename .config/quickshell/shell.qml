@@ -222,7 +222,7 @@ ShellRoot {
     }
 
     function launchApp(app) {
-        launchProc.command = ["bash", "-c", app.exec + " &"]
+        launchProc.command = ["bash", "-c", "systemd-run --user -E WAYLAND_DISPLAY -E DISPLAY -E DBUS_SESSION_BUS_ADDRESS " + app.exec]
         launchProc.running = true
         var usage = appUsage
         var updated = {}
