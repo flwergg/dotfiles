@@ -226,10 +226,9 @@ fi
 # Default shell
 section "Setting zsh as default shell"
 if [ "$SHELL" != "$(which zsh)" ]; then
-    chsh -s "$(which zsh)"
-    success "default shell set to zsh (takes effect on next login)"
+    chsh -s "$(which zsh)" && success "default shell set to zsh (takes effect on next login)" || warn "chsh failed — change shell manually with: chsh -s $(which zsh)"
 else
-    success "zsh is already default"
+    success "zsh is already default shell"
 fi
 
 # Done
