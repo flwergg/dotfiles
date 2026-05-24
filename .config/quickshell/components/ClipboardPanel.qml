@@ -63,8 +63,7 @@ PanelWindow {
             searchInput.text = ""
             clipboardPanel.searchTerm = ""
             clipboardPanel.selectedIndex = 0
-            if (clipboardPanel.entries.length === 0)
-                mkdirProc.running = true
+            mkdirProc.running = true
             focusTimer.start()
         }
     }
