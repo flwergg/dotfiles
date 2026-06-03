@@ -117,7 +117,7 @@ PACMAN_PACKAGES=(
     acpi
     upower
     fastfetch
-    htop
+    btop
     bat
     lsd
     zoxide
@@ -202,6 +202,10 @@ fi
 
 # Script permissions
 section "Setting script permissions"
+
+    echo '#!/bin/bash
+    pkill quickshell; nohup quickshell &>/dev/null &' > ~/.local/bin/start-quickshell.sh
+    chmod +x ~/.local/bin/start-quickshell.sh
 
 if [ -d "$HOME/.config/scripts" ]; then
     chmod +x "$HOME/.config/scripts/"*.sh

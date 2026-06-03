@@ -8,6 +8,7 @@ alias ls='lsd'
 alias ll='lsd -l'
 alias ..='cd ..'
 alias ...='cd ../..'
+alias lg='lazygit'
 alias r='source ~/.zshrc'
 alias clean-packages='sudo pacman -Rns $(pacman -Qdtq)'
 alias clean-pacman='sudo paccache -rk1 && sudo paccache -ruk0 && yay -Sc --noconfirm && flatpak uninstall --unused -y'
@@ -35,6 +36,8 @@ setopt HIST_FIND_NO_DUPS
 source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source /usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring-search.zsh
+source /usr/share/fzf/key-bindings.zsh
+source /usr/share/fzf/completion.zsh
 bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
 
