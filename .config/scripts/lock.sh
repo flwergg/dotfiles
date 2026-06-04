@@ -1,11 +1,6 @@
 #!/bin/bash
 
-WALLPAPER=$(tr '\0' '\n' < ~/.cache/awww/0.12.0/eDP-1 | grep '^/')
-
-# If the wallpaper file does not exist, use a default wallpaper
-if [[ ! -f "$WALLPAPER" ]]; then
-  WALLPAPER="~/Pictures/Fonditos/sailormoon2.jpg"
-fi
+WALLPAPER="~/Pictures/Fonditos/current"
 
 # Play a sound when locking the screen
 paplay ~/.config/sounds/lock.wav &
