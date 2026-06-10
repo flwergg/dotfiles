@@ -102,6 +102,7 @@ PACMAN_PACKAGES=(
     python-pywal
     qt5ct
     qt6ct
+    qt6-5compat
     kvantum
     papirus-icon-theme
     nwg-look
@@ -202,17 +203,17 @@ fi
 
 # Script permissions
 section "Setting script permissions"
-
-    echo '#!/bin/bash
-    pkill quickshell; nohup quickshell &>/dev/null &' > ~/.local/bin/start-quickshell.sh
-    chmod +x ~/.local/bin/start-quickshell.sh
-
 if [ -d "$HOME/.config/scripts" ]; then
     chmod +x "$HOME/.config/scripts/"*.sh
     success "scripts are executable"
 else
     warn "scripts folder not found"
 fi
+
+mkdir ~/.local/bin
+echo '#!/bin/bash
+pkill quickshell; nohup quickshell &>/dev/null &' > ~/.local/bin/start-quickshell.sh
+chmod +x ~/.local/bin/start-quickshell.sh
 
 # Wallpapers
 section "Wallpapers"
