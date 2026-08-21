@@ -1,7 +1,7 @@
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import Quickshell.Hyprland
+import Quickshell.I3
 import Quickshell.Services.SystemTray
 import QtQuick
 import QtQuick.Layouts
@@ -22,12 +22,13 @@ PanelWindow {
     property int notchRadius: 12
     property int notchHeight: 32
 
-    property int activeWsId: 1
-    property int targetWsId: 1
-    property string mediaText: ""
-    property string mediaClass: "stopped"
-    property real mediaPosition: 0
-    property real mediaLength: 0
+    readonly property string mediaText: {
+        if (root.mediaStatus !== "Playing" && root.mediaStatus !== "Paused") return ""
+        if (root.mediaTitle === "") return ""
+        var text = root.mediaArtist !== "" ? root.mediaArtist + " - " + root.mediaTitle : root.mediaTitle
+        if (text.length > 35) text = text.substring(0, 32) + "..."
+        return text
+    }
     property string volumeStr: "󰕾 0%"
     property int volumePercent: 50
     property bool volumeMuted: false
@@ -39,32 +40,9 @@ PanelWindow {
     property bool batteryCharging: false
     property string batteryClass: ""
     property string batteryTime: ""
-    property var cavaValues: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
     property bool volumeAdjusting: false
     property real pendingVolume: 0
     property int cpuPercent: 0
-
-    Connections {
-        target: Hyprland
-        function onRawEvent(event) {
-            if (event.name === "workspace") {
-                var wsId = parseInt(event.data.trim())
-                if (!isNaN(wsId)) {
-                    bar.targetWsId = wsId
-                    wsTransition.restart()
-                }
-            } else if (event.name === "focusedmon") {
-                var parts = event.data.split(",")
-                if (parts.length >= 2) {
-                    var wsId = parseInt(parts[1])
-                    if (!isNaN(wsId)) {
-                        bar.targetWsId = wsId
-                        wsTransition.restart()
-                    }
-                }
-            }
-        }
-    }
 
     SequentialAnimation {
         id: wsTransition
@@ -74,9 +52,6 @@ PanelWindow {
             to: 0.4
             duration: 50
             easing.type: Easing.OutQuad
-        }
-        ScriptAction {
-            script: bar.activeWsId = bar.targetWsId
         }
         ParallelAnimation {
             PropertyAnimation {
@@ -94,78 +69,6 @@ PanelWindow {
                 duration: 300
                 easing.type: Easing.OutBack
                 easing.overshoot: 1.5
-            }
-        }
-    }
-
-    Component.onCompleted: {
-        if (Hyprland.focusedMonitor && Hyprland.focusedMonitor.activeWorkspace) {
-            bar.activeWsId = Hyprland.focusedMonitor.activeWorkspace.id
-            bar.targetWsId = bar.activeWsId
-        }
-    }
-
-    Timer {
-        interval: 1500
-        running: true
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: { if (!mediaProc.running) mediaProc.running = true }
-    }
-
-    Process {
-        id: cavaProc
-        running: bar.mediaClass === "playing"
-        command: ["cava", "-p", Quickshell.env("HOME") + "/.config/cava/config_raw"]
-        stdout: SplitParser {
-            onRead: data => {
-                var parts = data.trim().split(";")
-                var vals = []
-                for (var i = 0; i < 12 && i < parts.length; i++) {
-                    vals.push(parseInt(parts[i]) / 255)
-                }
-                while (vals.length < 12) vals.push(0.1)
-                bar.cavaValues = vals
-            }
-        }
-    }
-
-    Timer {
-        interval: 80
-        running: bar.mediaClass !== "playing"
-        repeat: true
-        onTriggered: {
-            var newVals = []
-            for (var i = 0; i < 12; i++) {
-                newVals.push(bar.cavaValues[i] * 0.85)
-            }
-            bar.cavaValues = newVals
-        }
-    }
-
-    Process {
-        id: mediaProc
-        command: ["bash", "-c", "status=$(playerctl --player=%any status 2>/dev/null); pos=$(playerctl --player=%any position 2>/dev/null | cut -d. -f1); len=$(playerctl --player=%any metadata mpris:length 2>/dev/null); len=$((len / 1000000)); if [ \"$status\" = \"Playing\" ] || [ \"$status\" = \"Paused\" ]; then artist=$(playerctl --player=%any metadata artist 2>/dev/null); title=$(playerctl --player=%any metadata title 2>/dev/null); if [ -n \"$title\" ]; then text=\"$title\"; [ -n \"$artist\" ] && text=\"$artist - $title\"; if [ ${#text} -gt 35 ]; then text=\"${text:0:32}...\"; fi; echo \"$status|$text|$pos|$len\"; else echo 'stopped||0|0'; fi; else echo 'stopped||0|0'; fi"]
-        stdout: SplitParser {
-            onRead: data => {
-                var parts = data.trim().split("|")
-                if (parts.length >= 4) {
-                    bar.mediaClass = parts[0].toLowerCase()
-                    bar.mediaText = parts[1]
-                    bar.mediaPosition = parseInt(parts[2]) || 0
-                    bar.mediaLength = parseInt(parts[3]) || 0
-                }
-            }
-        }
-    }
-
-    Timer {
-        interval: 1000
-        running: bar.mediaClass === "playing"
-        repeat: true
-        onTriggered: {
-            if (bar.mediaPosition < bar.mediaLength) {
-                bar.mediaPosition += 1
             }
         }
     }
@@ -244,7 +147,7 @@ PanelWindow {
 
     Process {
         id: networkProc
-        command: ["bash", "-c", "wifi=$(nmcli -t -f active,ssid,signal dev wifi 2>/dev/null | grep '^yes' | head -1); if [ -n \"$wifi\" ]; then ssid=$(echo \"$wifi\" | cut -d: -f2); sig=$(echo \"$wifi\" | cut -d: -f3); echo \"1|$ssid|$sig\"; else echo '0||0'; fi; bt='0'; devices=$(echo -e 'devices\\nquit' | bluetoothctl 2>/dev/null | grep '^Device' | awk '{print $2}'); for mac in $devices; do if echo -e \"info $mac\\nquit\" | bluetoothctl 2>/dev/null | grep -q 'Connected: yes'; then bt='1'; break; fi; done; echo \"bt:$bt\""]
+        command: ["bash", "-c", "wifi=$(nmcli -t -f active,ssid,signal dev wifi 2>/dev/null | grep '^yes' | head -1); if [ -n \"$wifi\" ]; then ssid=$(echo \"$wifi\" | cut -d: -f2); sig=$(echo \"$wifi\" | cut -d: -f3); echo \"1|$ssid|$sig\"; else echo '0||0'; fi; if [ -n \"$(bluetoothctl devices Connected 2>/dev/null)\" ]; then echo 'bt:1'; else echo 'bt:0'; fi"]
         stdout: SplitParser {
             onRead: data => {
                 var line = data.trim()
@@ -300,24 +203,6 @@ PanelWindow {
         stdout: SplitParser {
             onRead: data => bar.cpuPercent = parseInt(data.trim()) || 0
         }
-    }
-
-    Process {
-        id: mediaPlayPauseProc
-        command: ["playerctl", "play-pause"]
-        onExited: { if (!mediaProc.running) mediaProc.running = true }
-    }
-
-    Process {
-        id: mediaNextProc
-        command: ["playerctl", "next"]
-        onExited: { if (!mediaProc.running) mediaProc.running = true }
-    }
-
-    Process {
-        id: mediaPrevProc
-        command: ["playerctl", "previous"]
-        onExited: { if (!mediaProc.running) mediaProc.running = true }
     }
 
     component Notch: Item {
@@ -491,19 +376,22 @@ PanelWindow {
 
                             Repeater {
                                 id: wsRepeater
-                                model: Hyprland.workspaces
+                                model: I3.workspaces
 
                                 delegate: Item {
                                     id: wsDelegate
                                     required property var modelData
-                                    property bool isActive: bar.activeWsId === modelData.id
+                                    property bool isActive: modelData.focused
                                     property bool isHovered: wsMA.containsMouse
 
                                     visible: modelData.id > 0
                                     width: Math.max(wsText.implicitWidth + 14, 26)
                                     height: 18
 
-                                    onIsActiveChanged: updateHighlight()
+                                    onIsActiveChanged: {
+                                        updateHighlight()
+                                        if (isActive) wsTransition.restart()
+                                    }
                                     onXChanged: if (isActive) updateHighlight()
                                     onWidthChanged: if (isActive) updateHighlight()
                                     Component.onCompleted: if (isActive) updateHighlight()
@@ -540,20 +428,7 @@ PanelWindow {
                                         anchors.fill: parent
                                         hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
-                                        onClicked: Hyprland.dispatch("workspace " + modelData.id)
-                                    }
-                                }
-                            }
-                        }
-
-                        Connections {
-                            target: bar
-                            function onActiveWsIdChanged() {
-                                for (var i = 0; i < wsRepeater.count; i++) {
-                                    var item = wsRepeater.itemAt(i)
-                                    if (item && item.isActive) {
-                                        item.updateHighlight()
-                                        break
+                                        onClicked: I3.dispatch("workspace " + modelData.name)
                                     }
                                 }
                             }
@@ -592,7 +467,7 @@ PanelWindow {
                             font.pixelSize: 12
                             font.bold: true
                             font.family: "JetBrainsMono Nerd Font"
-                            opacity: bar.mediaClass === "playing" ? 1.0 : 0.7
+                            opacity: root.mediaStatus === "Playing" ? 1.0 : 0.7
 
                             layer.enabled: true
                             layer.effect: DropShadow {
@@ -621,16 +496,16 @@ PanelWindow {
                     if (mouse.button === Qt.RightButton)
                         root.toggleMusic()
                     else if (mouse.button === Qt.MiddleButton) {
-                        if (!mediaNextProc.running) mediaNextProc.running = true
+                        root.mediaNext()
                     } else {
                         root.toggleMusic()
                     }
                 }
                 onWheel: function(wheel) {
                     if (wheel.angleDelta.y > 0) {
-                        if (!mediaNextProc.running) mediaNextProc.running = true
+                        root.mediaNext()
                     } else {
-                        if (!mediaPrevProc.running) mediaPrevProc.running = true
+                        root.mediaPrevious()
                     }
                 }
             }

@@ -8,25 +8,24 @@ import Qt5Compat.GraphicalEffects
 
 PanelWindow {
     id: musicPanel
-    visible: true
+    property bool panelOpen: false
+    visible: panelOpen
     exclusionMode: ExclusionMode.Ignore
     anchors { top: true; left: true; right: true }
-    margins { top: root.musicVisible ? 50 : -350; left: 0; right: 0 }
+    margins { top: 50; left: 0; right: 0 }
     implicitWidth: 400
     implicitHeight: 188
     color: "transparent"
     focusable: true
     WlrLayershell.keyboardFocus: root.musicVisible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
-    Behavior on margins.top { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
 
     property string configPath: root.configPath
     property string gifPath: configPath + "/assets/gifs"
-    property string playerStatus: "Stopped"
-    property string trackTitle: ""
-    property string trackArtist: ""
-    property real position: 0
-    property real lastPosition: 0
-    property real length: 0
+    readonly property string playerStatus: root.mediaStatus
+    readonly property string trackTitle: root.mediaTitle
+    readonly property string trackArtist: root.mediaArtist
+    readonly property real position: root.mediaPosition
+    readonly property real length: root.mediaLength
     property bool hasTrack: playerStatus === "Playing" || playerStatus === "Paused"
     property string gifSource: "file://" + gifPath + "/nyancat.gif"
     property var cavaValues: []
@@ -40,6 +39,7 @@ PanelWindow {
 
     Item {
         anchors.fill: parent
+        clip: true
         focus: root.musicVisible
 
         Keys.onPressed: function(event) {
@@ -47,20 +47,22 @@ PanelWindow {
                 root.musicVisible = false
                 event.accepted = true
             } else if (event.key === Qt.Key_Space) {
-                if (!playPauseProc.running) playPauseProc.running = true
+                root.mediaPlayPause()
                 event.accepted = true
             } else if (event.key === Qt.Key_N) {
-                if (!nextProc.running) nextProc.running = true
+                root.mediaNext()
                 event.accepted = true
             } else if (event.key === Qt.Key_P) {
-                if (!prevProc.running) prevProc.running = true
+                root.mediaPrevious()
                 event.accepted = true
             }
         }
 
         Column {
             anchors.horizontalCenter: parent.horizontalCenter
+            y: root.musicVisible ? 0 : -height
             spacing: 8
+            Behavior on y { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
 
             Rectangle {
                 width: 400
@@ -194,7 +196,7 @@ PanelWindow {
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
-                                    onClicked: if (!prevProc.running) prevProc.running = true
+                                    onClicked: root.mediaPrevious()
                                 }
                             }
 
@@ -215,7 +217,7 @@ PanelWindow {
                                 MouseArea {
                                     anchors.fill: parent
                                     cursorShape: Qt.PointingHandCursor
-                                    onClicked: if (!playPauseProc.running) playPauseProc.running = true
+                                    onClicked: root.mediaPlayPause()
                                 }
                             }
 
@@ -238,7 +240,7 @@ PanelWindow {
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
-                                    onClicked: if (!nextProc.running) nextProc.running = true
+                                    onClicked: root.mediaNext()
                                 }
                             }
                         }
@@ -259,7 +261,7 @@ PanelWindow {
                             Loader {
                                 id: danceGifLoader
                                 anchors.fill: parent
-                                active: true
+                                active: root.musicVisible
                                 sourceComponent: AnimatedImage {
                                     anchors.centerIn: parent
                                     width: parent.width
@@ -284,9 +286,20 @@ PanelWindow {
         target: root
         function onMusicVisibleChanged() {
             if (root.musicVisible) {
+                closeTimer.stop()
+                musicPanel.panelOpen = true
                 focusTimer.start()
+            } else {
+                closeTimer.restart()
             }
         }
+    }
+
+    Timer {
+        id: closeTimer
+        interval: 320
+        repeat: false
+        onTriggered: musicPanel.panelOpen = false
     }
 
     Timer {
@@ -305,17 +318,6 @@ PanelWindow {
         repeat: false
         onTriggered: {
             musicPanel.WlrLayershell.keyboardFocus = WlrKeyboardFocus.OnDemand
-        }
-    }
-
-    Timer {
-        id: playerPollTimer
-        interval: 1000
-        running: root.musicVisible
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: {
-            if (!musicStatusProc.running) musicStatusProc.running = true
         }
     }
 
@@ -346,87 +348,6 @@ Timer {
         musicPanel.cavaValues = newVals
     }
 }
-
-    Process {
-        id: musicStatusProc
-        command: ["playerctl", "status"]
-        stdout: SplitParser {
-            onRead: data => {
-                var newStatus = data.trim()
-                if (newStatus === "") newStatus = "Stopped"
-                var wasPlaying = musicPanel.playerStatus === "Playing"
-                var isNowPlaying = newStatus === "Playing"
-                musicPanel.playerStatus = newStatus
-                if (!musicTitleProc.running) musicTitleProc.running = true
-                if (!musicArtistProc.running) musicArtistProc.running = true
-                if (!musicLenProc.running) musicLenProc.running = true
-                if (isNowPlaying) {
-                    if (!musicPosProc.running) musicPosProc.running = true
-                } else if (wasPlaying && !isNowPlaying) {
-                    musicPanel.lastPosition = musicPanel.position
-                } else if (!isNowPlaying) {
-                    musicPanel.position = musicPanel.lastPosition
-                }
-            }
-        }
-        onExited: code => {
-            if (code !== 0) {
-                musicPanel.playerStatus = "Stopped"
-                musicPanel.trackTitle = ""
-                musicPanel.trackArtist = ""
-            }
-        }
-    }
-
-    Process {
-        id: musicTitleProc
-        command: ["playerctl", "metadata", "title"]
-        stdout: SplitParser { onRead: data => musicPanel.trackTitle = data.trim() }
-        onExited: code => { if (code !== 0) musicPanel.trackTitle = "" }
-    }
-
-    Process {
-        id: musicArtistProc
-        command: ["playerctl", "metadata", "artist"]
-        stdout: SplitParser { onRead: data => musicPanel.trackArtist = data.trim() }
-        onExited: code => { if (code !== 0) musicPanel.trackArtist = "" }
-    }
-
-    Process {
-        id: musicPosProc
-        command: ["playerctl", "position"]
-        stdout: SplitParser {
-            onRead: data => {
-                var pos = parseFloat(data.trim()) || 0
-                musicPanel.position = pos
-                musicPanel.lastPosition = pos
-            }
-        }
-    }
-
-    Process {
-        id: musicLenProc
-        command: ["sh", "-c", "playerctl metadata mpris:length 2>/dev/null | awk '{print $1/1000000}'"]
-        stdout: SplitParser { onRead: data => musicPanel.length = parseFloat(data.trim()) || 0 }
-    }
-
-    Process {
-        id: playPauseProc
-        command: ["playerctl", "play-pause"]
-        onExited: { if (!musicStatusProc.running) musicStatusProc.running = true }
-    }
-
-    Process {
-        id: nextProc
-        command: ["playerctl", "next"]
-        onExited: { if (!musicStatusProc.running) musicStatusProc.running = true }
-    }
-
-    Process {
-        id: prevProc
-        command: ["playerctl", "previous"]
-        onExited: { if (!musicStatusProc.running) musicStatusProc.running = true }
-    }
 
     Process {
         id: seekProc

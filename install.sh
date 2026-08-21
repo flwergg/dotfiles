@@ -23,7 +23,7 @@ section() { echo -e "\n${PINK}── $1 ${NC}"; }
 echo -e "${PINK}"
 echo "  ╭──────────────────────────────╮"
 echo "  │     gaby's dotfiles          │"
-echo "  │     arch + hyprland          │"
+echo "  │     arch + sway              │"
 echo "  ╰──────────────────────────────╯"
 echo -e "${NC}"
 
@@ -50,12 +50,11 @@ fi
 section "Installing packages"
 
 PACMAN_PACKAGES=(
-    # Core Hyprland
-    hyprland
-    xdg-desktop-portal-hyprland
+    # Core Sway
+    xdg-desktop-portal-wlr
     xdg-desktop-portal-gtk
-    hypridle
     hyprpicker
+    python-pip
 
     # Audio
     pipewire
@@ -77,6 +76,7 @@ PACMAN_PACKAGES=(
     wl-clipboard
     cliphist
     wlsunset
+    awww
 
     # Network & Bluetooth
     networkmanager
@@ -133,7 +133,7 @@ PACMAN_PACKAGES=(
 )
 
 AUR_PACKAGES=(
-    awww
+    swayfx
     swaylock-effects
     mpd-mpris
 )
@@ -147,6 +147,11 @@ log "Installing AUR packages..."
 yay -S --needed --noconfirm "${AUR_PACKAGES[@]}" \
     || warn "Some AUR packages failed — check manually"
 success "AUR packages done"
+
+log "Installing pip packages (autotiling, i3ipc)..."
+pip install --user --break-system-packages autotiling i3ipc \
+    || warn "pip packages failed — check manually"
+success "pip packages done"
 
 # Enable services
 section "Enabling services"
@@ -184,13 +189,13 @@ copy_config() {
     fi
 }
 
-copy_config "hypr"
+copy_config "sway"
 copy_config "kitty"
 copy_config "quickshell"
 copy_config "swaync"
 copy_config "cava"
 copy_config "fastfetch"
-copy_config "htop"
+copy_config "btop"
 copy_config "mpv"
 copy_config "wal"
 copy_config "scripts"

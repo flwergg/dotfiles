@@ -14,7 +14,7 @@ PanelWindow {
     implicitWidth: 420
     color: "transparent"
     focusable: true
-    WlrLayershell.keyboardFocus: root.launcherVisible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: root.launcherVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
     MouseArea {
         anchors.fill: parent
@@ -325,6 +325,8 @@ PanelWindow {
                                             fillMode: Image.PreserveAspectFit
                                             asynchronous: true
                                             cache: true
+                                            sourceSize.width: 32
+                                            sourceSize.height: 32
                                         }
                                     }
                                     ColumnLayout {
@@ -752,6 +754,7 @@ PanelWindow {
                 wallSearchInput.text = ""
                 searchInput.focus = false
                 wallSearchInput.focus = false
+                launcherPanel.WlrLayershell.keyboardFocus = WlrKeyboardFocus.None
             }
         }
         function onWallSelectedIndexChanged() {
@@ -781,7 +784,6 @@ PanelWindow {
                 if (!root.wallsLoaded) root.loadWallpapers()
                 wallSearchInput.forceActiveFocus()
             }
-            launcherPanel.WlrLayershell.keyboardFocus = WlrKeyboardFocus.OnDemand
         }
     }
 }

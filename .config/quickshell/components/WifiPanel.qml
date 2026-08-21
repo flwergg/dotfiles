@@ -7,19 +7,20 @@ import QtQuick.Controls
 
 PanelWindow {
     id: wifiPanel
-    visible: true
+    property bool panelOpen: false
+    visible: panelOpen
     exclusionMode: ExclusionMode.Ignore
     anchors { top: true; right: true }
-    margins { top: 40; right: root.wifiVisible ? 6 : -350 }
+    margins { top: 40; right: 6 }
     implicitHeight: 420
     implicitWidth: 320
     color: "transparent"
     focusable: true
     WlrLayershell.keyboardFocus: root.wifiVisible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
-    Behavior on margins.right { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
 
     Item {
         anchors.fill: parent
+        clip: true
         focus: root.wifiVisible
 
         Keys.onPressed: function(event) {
@@ -35,7 +36,10 @@ PanelWindow {
         }
 
         Rectangle {
-            anchors.fill: parent
+            width: parent.width
+            height: parent.height
+            x: root.wifiVisible ? 0 : width
+            Behavior on x { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
             color: Qt.rgba(root.walBackground.r, root.walBackground.g, root.walBackground.b, 0.5)
 
             radius: 20
@@ -348,9 +352,20 @@ PanelWindow {
         target: root
         function onWifiVisibleChanged() {
             if (root.wifiVisible) {
+                closeTimer.stop()
+                wifiPanel.panelOpen = true
                 focusTimer.start()
+            } else {
+                closeTimer.restart()
             }
         }
+    }
+
+    Timer {
+        id: closeTimer
+        interval: 320
+        repeat: false
+        onTriggered: wifiPanel.panelOpen = false
     }
 
     Timer {

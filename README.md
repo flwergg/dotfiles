@@ -1,4 +1,4 @@
-# 🌸 My Hyprland Dotfiles
+# 🌸 My Sway Dotfiles
 
 It's soft, cute, minimal, and perfect for everyday cozy hacking ✨
 
@@ -6,7 +6,7 @@ It's soft, cute, minimal, and perfect for everyday cozy hacking ✨
 
 ## 🧷 What's in this rice?
 
-- [Hyprland](https://github.com/hyprwm/Hyprland) for tiling (and vibes)
+- [SwayFX](https://github.com/WillPower3309/swayfx) for tiling (and vibes)
 - [Quickshell](https://quickshell.outfoxxed.me/) — bar, launcher, clipboard, calendar, emoji picker, music panel, OSD
 - [Kitty](https://github.com/kovidgoyal/kitty) as my pastel terminal
 - [Swaync](https://github.com/ErikReider/SwayNotificationCenter) for notifications
@@ -47,12 +47,13 @@ It's soft, cute, minimal, and perfect for everyday cozy hacking ✨
 ## 📦 Things I use
 
 ```ini
-hyprland quickshell kitty swaync awww
-swaylock-effects cava mpd playerctl
+swayfx quickshell kitty swaync awww
+swaylock-effects hyprpicker cava mpd playerctl
 cliphist wlsunset swappy nemo
 catppuccin-gtk-theme catppuccin-cursors papirus-icon-theme
 pipewire wireplumber brightnessctl
 fastfetch pywal ttf-jetbrains-mono-nerd
+autotiling i3ipc (pip, for inactive-opacity.py)
 ```
 
 ---

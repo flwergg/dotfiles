@@ -5,6 +5,7 @@ THEME_LIGHT="catppuccin-latte-flamingo-standard+default"
 
 THEME_DARK="catppuccin-mocha-flamingo-standard+default"
 CURSOR_DARK="catppuccin-mocha-flamingo-cursors"
+CURSOR_LIGHT="catppuccin-mocha-flamingo-cursors"
 
 INDEX_PATH="$HOME/.icons/default/index.theme"
 
@@ -18,7 +19,7 @@ if [[ "$CURRENT_THEME" == "$THEME_LIGHT" ]]; then
     gsettings set org.gnome.desktop.interface cursor-theme "$CURSOR_DARK"
     gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
     echo -e "[Icon Theme]\nInherits=$CURSOR_DARK" > "$INDEX_PATH"
-    hyprctl setcursor "$CURSOR_DARK" 24
+    swaymsg seat seat0 xcursor_theme "$CURSOR_DARK" 24
     notify-send "🌙 Night Mode On"
 
 else
@@ -27,8 +28,8 @@ else
     gsettings set org.gnome.desktop.interface icon-theme "Papirus-Light"
     gsettings set org.gnome.desktop.interface cursor-theme "$CURSOR_LIGHT"
     gsettings set org.gnome.desktop.interface color-scheme 'prefer-light'
-    echo -e "[Icon Theme]\nInherits=$CURSOR_DARK" > "$INDEX_PATH"
-    hyprctl setcursor "$CURSOR_LIGHT" 24
+    echo -e "[Icon Theme]\nInherits=$CURSOR_LIGHT" > "$INDEX_PATH"
+    swaymsg seat seat0 xcursor_theme "$CURSOR_LIGHT" 24
     notify-send "🌞 Light Mode On"
     
 fi

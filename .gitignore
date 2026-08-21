@@ -1,0 +1,6 @@
+# pywal-generated colorschemes (regenerated per wallpaper)
+.config/wal/colorschemes/
+
+# quickshell runtime state
+.config/quickshell/state/
+.config/quickshell/app_usage.json

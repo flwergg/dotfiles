@@ -1,17 +1,10 @@
 #!/bin/bash
-WALLPAPER_DIR="$HOME/Pictures/Fonditos"
 INTERVAL=1800
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-change_wallpaper() {
-    selected_path=$(find "$WALLPAPER_DIR" -maxdepth 1 -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.gif' -o -iname '*.png' -o -iname '*.webp' \) ! -name ".*" | shuf -n1)
-    if [ -f "$selected_path" ]; then
-        qs ipc call randomwallpaper apply "$selected_path"
-    fi
-}
-
-change_wallpaper
+"$SCRIPT_DIR/change_wallpaper_once.sh"
 
 while true; do
     sleep $INTERVAL
-    change_wallpaper
+    "$SCRIPT_DIR/change_wallpaper_once.sh"
 done

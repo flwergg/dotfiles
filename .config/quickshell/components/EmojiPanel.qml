@@ -12,7 +12,7 @@ PanelWindow {
     anchors { top: true; bottom: true; left: true; right: true }
     color: "transparent"
     focusable: true
-    WlrLayershell.keyboardFocus: root.emojiVisible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: root.emojiVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
     property int currentTab: 0
     property string searchTerm: ""
@@ -111,7 +111,6 @@ PanelWindow {
                 emojiSearchInput.forceActiveFocus()
             else
                 kaoSearchInput.forceActiveFocus()
-            emojiPanel.WlrLayershell.keyboardFocus = WlrKeyboardFocus.OnDemand
         }
     }
 
@@ -131,6 +130,7 @@ PanelWindow {
                 kaoSearchInput.text = ""
                 emojiSearchInput.focus = false
                 kaoSearchInput.focus = false
+                emojiPanel.WlrLayershell.keyboardFocus = WlrKeyboardFocus.None
             }
         }
     }

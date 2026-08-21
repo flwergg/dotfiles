@@ -12,7 +12,7 @@ PanelWindow {
     anchors { top: true; bottom: true; left: true; right: true }
     color: "transparent"
     focusable: true
-    WlrLayershell.keyboardFocus: root.clipboardVisible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+    WlrLayershell.keyboardFocus: root.clipboardVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
 
     property var entries: []
@@ -25,12 +25,19 @@ PanelWindow {
         if (searchTerm === "") return entries
         var term = searchTerm.toLowerCase()
         return entries.filter(function(e) {
-            return e.preview.toLowerCase().includes(term)
+            return e.displayPreview.toLowerCase().includes(term)
         })
     }
 
     function isImageEntry(preview) {
         return preview.indexOf("[[ binary data") !== -1
+    }
+
+    function cleanPreview(text) {
+        var nulCount = (text.match(/\u0000/g) || []).length
+        if (nulCount > text.length * 0.3)
+            return text.replace(/\u0000/g, "")
+        return text
     }
 
     function loadEntries() {
@@ -65,6 +72,9 @@ PanelWindow {
             clipboardPanel.selectedIndex = 0
             mkdirProc.running = true
             focusTimer.start()
+        } else {
+            searchInput.focus = false
+            clipboardPanel.WlrLayershell.keyboardFocus = WlrKeyboardFocus.None
         }
     }
 
@@ -91,6 +101,7 @@ PanelWindow {
                 current.push({
                     id: id,
                     preview: preview,
+                    displayPreview: clipboardPanel.cleanPreview(preview),
                     isImage: isImg,
                     tmpFile: isImg ? clipboardPanel.tmpDir + "/" + id + ".png" : ""
                 })
@@ -140,7 +151,6 @@ PanelWindow {
         repeat: false
         onTriggered: {
             searchInput.forceActiveFocus()
-            clipboardPanel.WlrLayershell.keyboardFocus = WlrKeyboardFocus.OnDemand
         }
     }
 
@@ -328,6 +338,8 @@ PanelWindow {
                                     asynchronous: true
                                     cache: false
                                     smooth: true
+                                    sourceSize.width: 130
+                                    sourceSize.height: 100
                                 }
 
                                 Text {
@@ -348,7 +360,7 @@ PanelWindow {
 
                                 Text {
                                     Layout.fillWidth: true
-                                    text: modelData.isImage ? "Image" : modelData.preview
+                                    text: modelData.isImage ? "Image" : modelData.displayPreview
                                     color: index === clipboardPanel.selectedIndex
                                         ? root.walColor5
                                         : root.walForeground
@@ -364,7 +376,7 @@ PanelWindow {
                                 Text {
                                     visible: modelData.isImage
                                     Layout.fillWidth: true
-                                    text: modelData.preview.replace("[[ binary data ", "").replace(" ]]", "")
+                                    text: modelData.displayPreview.replace("[[ binary data ", "").replace(" ]]", "")
                                     color: root.walColor8
                                     font.pixelSize: 10
                                     font.family: "JetBrainsMono Nerd Font"

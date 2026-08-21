@@ -4,7 +4,6 @@ import Quickshell.Wayland
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
-import Qt5Compat.GraphicalEffects
 import "./components"
 
 ShellRoot {
@@ -14,7 +13,6 @@ ShellRoot {
     property string homePath: Quickshell.env("HOME")
     property string wallpaperPath: homePath + "/Pictures/Fonditos"
     property string cachePath: homePath + "/.cache"
-    property string statePath: configPath + "/state"
 
     property bool musicVisible: false
     property bool launcherVisible: false
@@ -24,7 +22,6 @@ ShellRoot {
     property bool clipboardVisible: false
     property bool emojiVisible: false
     property bool osdVisible: false
-    property var pfpFiles: []
     property string searchTerm: ""
     property var appList: []
     property var appUsage: ({})
@@ -94,7 +91,15 @@ ShellRoot {
     property color walColor8: "#6c7086"
     property color walColor13: "#f5c2e7"
 
-    property int savedGifIndex: 0
+    property string mediaStatus: "Stopped"
+    property string mediaTitle: ""
+    property string mediaArtist: ""
+    property real mediaPosition: 0
+    property real mediaLength: 0
+
+    function mediaPlayPause() { if (!mediaPlayPauseProc.running) mediaPlayPauseProc.running = true }
+    function mediaNext() { if (!mediaNextProc.running) mediaNextProc.running = true }
+    function mediaPrevious() { if (!mediaPrevProc.running) mediaPrevProc.running = true }
 
     function toggleLauncher() { launcherVisible = !launcherVisible }
 
@@ -114,13 +119,6 @@ ShellRoot {
     function toggleBluetooth() {
         btVisible = !btVisible
         if (btVisible) { wifiVisible = false; refreshBluetooth() }
-    }
-
-    function closeAllPanels() {
-        musicVisible = false
-        launcherVisible = false
-        wifiVisible = false
-        btVisible = false
     }
 
     function refreshBluetooth() {
@@ -164,61 +162,12 @@ ShellRoot {
         if (!wifiScanProc.running) wifiScanProc.running = true
     }
 
-    function saveState(key, value) {
-        saveStateProc.command = ["bash", "-c", "mkdir -p '" + statePath + "' && echo '" + value + "' > '" + statePath + "/" + key + "'"]
-        saveStateProc.running = true
-    }
-
-    function loadState(key, callback) {
-        loadStateProc.stateKey = key
-        loadStateProc.callback = callback
-        loadStateProc.command = ["cat", statePath + "/" + key]
-        loadStateProc.running = true
-    }
-
     Component.onCompleted: {
-        initStateDir.running = true
-    }
-
-    Process {
-        id: initStateDir
-        command: ["mkdir", "-p", root.statePath]
-        onExited: {
-            walColorsProc.running = true
-            appListProc.running = true
-            loadUsageProc.running = true
-            currentWallProc.running = true
-            thumbDirProc.running = true
-            loadGifIndexProc.running = true
-        }
-    }
-
-    Process {
-        id: loadGifIndexProc
-        command: ["bash", "-c", "cat '" + root.statePath + "/gif-index' 2>/dev/null || echo '0'"]
-        stdout: SplitParser {
-            onRead: data => {
-                var idx = parseInt(data.trim())
-                root.savedGifIndex = isNaN(idx) ? 0 : idx
-            }
-        }
-    }
-
-    Process {
-        id: saveStateProc
-    }
-
-    Process {
-        id: loadStateProc
-        property string stateKey: ""
-        property var callback: null
-        stdout: SplitParser {
-            onRead: data => {
-                if (loadStateProc.callback) {
-                    loadStateProc.callback(data.trim())
-                }
-            }
-        }
+        walColorsProc.running = true
+        appListProc.running = true
+        loadUsageProc.running = true
+        currentWallProc.running = true
+        thumbDirProc.running = true
     }
 
     function launchApp(app) {
@@ -239,7 +188,7 @@ ShellRoot {
         root.walApplying = true
         applyWallProc.command = ["bash", "-c",
             "ln -sf '" + wallpaper.path + "' '" + root.wallpaperPath + "/current' && " +
-            "awww img '" + wallpaper.path + "' --transition-type any --transition-duration 2 & " +
+            "awww img '" + wallpaper.path + "' --transition-type none & " +
             "wal -i '" + wallpaper.path + "' -n -q && " +
             "sleep 0.3"
         ]
@@ -250,7 +199,7 @@ ShellRoot {
         root.wallpaperList = []
         root.wallsLoaded = false
         root.thumbsReady = false
-        if (!wallpaperListProc.running) wallpaperListProc.running = true
+        if (!wallpaperScanProc.running) wallpaperScanProc.running = true
     }
 
     Process {
@@ -260,34 +209,14 @@ ShellRoot {
     }
 
     Process {
-        id: wallpaperListProc
-        command: ["bash", "-c", "find '" + root.wallpaperPath + "' -maxdepth 1 -type f \\( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.gif' -o -iname '*.png' -o -iname '*.webp' \\) ! -name '.*' 2>/dev/null | sort"]
-        stdout: SplitParser {
-            onRead: data => {
-                var path = data.trim()
-                if (path.length === 0) return
-                var parts = path.split("/")
-                var name = parts[parts.length - 1]
-                var current = root.wallpaperList.slice()
-                current.push({ name: name, path: path })
-                root.wallpaperList = current
-            }
-        }
-        onExited: {
-            root.wallsLoaded = true
-            if (!thumbGenProc.running) thumbGenProc.running = true
-        }
-    }
-
-    Process {
-        id: thumbGenProc
+        id: wallpaperScanProc
         command: ["bash", "-c",
             "THUMB_DIR='" + root.cachePath + "/wallpaper-thumbs' && " +
             "WALL_DIR='" + root.wallpaperPath + "' && " +
-            "cd \"$THUMB_DIR\" && " +
-            "find \"$WALL_DIR\" -maxdepth 1 -type f \\( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.gif' -o -iname '*.png' -o -iname '*.webp' \\) ! -name '.*' 2>/dev/null | " +
+            "find \"$WALL_DIR\" -maxdepth 1 -type f \\( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.gif' -o -iname '*.png' -o -iname '*.webp' \\) ! -name '.*' 2>/dev/null | sort | " +
             "while IFS= read -r f; do " +
-            "  hash=$(echo -n \"$f\" | md5sum | cut -d' ' -f1); " +
+            "  hash=$(printf '%s' \"$f\" | md5sum | cut -d' ' -f1); " +
+            "  printf '%s|%s\\n' \"$f\" \"$hash\"; " +
             "  thumb=\"$THUMB_DIR/${hash}.jpg\"; " +
             "  if [ ! -f \"$thumb\" ] || [ \"$f\" -nt \"$thumb\" ]; then " +
             "    if command -v vipsthumbnail >/dev/null 2>&1; then " +
@@ -304,27 +233,30 @@ ShellRoot {
             "  fi; " +
             "done"
         ]
-        onExited: {
-            root.thumbsReady = true
-            if (!hashAllProc.running) hashAllProc.running = true
-        }
-    }
-
-    Process {
-    id: hashAllProc
-    command: ["bash", "-c", "for f in '" + root.wallpaperPath + "'/*; do [ -f \"$f\" ] && echo \"$f|$(echo -n \"$f\" | md5sum | cut -d' ' -f1)\"; done"]
-    stdout: SplitParser {
-        onRead: data => {
-            var parts = data.trim().split("|")
-            if (parts.length === 2 && parts[0] && parts[1]) {
-                var updated = root.wallpaperHashes
-                updated[parts[0]] = parts[1]
-                root.wallpaperHashes = updated
+        stdout: SplitParser {
+            onRead: data => {
+                var line = data.trim()
+                if (line.length === 0) return
+                var sep = line.lastIndexOf("|")
+                if (sep === -1) return
+                var path = line.substring(0, sep)
+                var hash = line.substring(sep + 1)
+                var parts = path.split("/")
+                var name = parts[parts.length - 1]
+                var list = root.wallpaperList.slice()
+                list.push({ name: name, path: path })
+                root.wallpaperList = list
+                var hashes = root.wallpaperHashes
+                hashes[path] = hash
+                root.wallpaperHashes = hashes
                 root.wallpaperHashesChanged()
             }
         }
+        onExited: {
+            root.wallsLoaded = true
+            root.thumbsReady = true
+        }
     }
-}
 
     Process {
         id: applyWallProc
@@ -366,20 +298,6 @@ ShellRoot {
     Process {
         id: walStepSwaync
         command: ["bash", "-c", "cp '" + root.cachePath + "/wal/colors-swaync.css' '" + root.configPath + "/../swaync/style.css' 2>/dev/null; pkill -SIGUSR1 swaync 2>/dev/null"]
-        onExited: {
-            if (!walStepBlur.running) walStepBlur.running = true
-        }
-    }
-
-    Process {
-        id: walStepBlur
-        command: {
-            var wp = root.currentWallpaper
-            if (wp.endsWith(".gif"))
-                return ["bash", "-c", "convert '" + wp + "[0]' -resize 1920x -blur 0x8 -quality 85 '" + root.wallpaperPath + "/.current-blurred.jpg' 2>/dev/null"]
-            else
-                return ["bash", "-c", "convert '" + wp + "' -resize 1920x -blur 0x8 -quality 85 '" + root.wallpaperPath + "/.current-blurred.jpg' 2>/dev/null"]
-        }
         onExited: root.walApplying = false
     }
 
@@ -406,7 +324,7 @@ ShellRoot {
     Process {
         id: appListProc
         command: ["bash", "-c",
-            "for f in /usr/share/applications/*.desktop '" + root.homePath + "/.local/share/applications'/*.desktop; do " +
+            "for f in /usr/share/applications/*.desktop '" + root.homePath + "/.local/share/applications'/*.desktop /var/lib/flatpak/exports/share/applications/*.desktop '" + root.homePath + "/.local/share/flatpak/exports/share/applications'/*.desktop; do " +
             "  [ -f \"$f\" ] || continue; " +
             "  grep -qi '^NoDisplay=true' \"$f\" && continue; " +
             "  grep -qi '^Hidden=true' \"$f\" && continue; " +
@@ -500,9 +418,9 @@ ShellRoot {
         property string password: ""
         command: {
             if (password !== "")
-                return ["bash", "-c", "nmcli dev wifi connect '" + ssid + "' password '" + password + "' 2>&1"]
+                return ["nmcli", "dev", "wifi", "connect", ssid, "password", password]
             else
-                return ["bash", "-c", "nmcli dev wifi connect '" + ssid + "' 2>&1"]
+                return ["nmcli", "dev", "wifi", "connect", ssid]
         }
         onExited: {
             root.wifiConnecting = false
@@ -556,7 +474,7 @@ ShellRoot {
 
     Process {
         id: btDevicesProc
-        command: ["bash", "-c", "echo -e 'devices\\nquit' | bluetoothctl 2>/dev/null | grep '^Device' | awk '{print $2\" \"substr($0, index($0,$3))}' | while read mac name; do connected=$(echo -e \"info $mac\\nquit\" | bluetoothctl 2>/dev/null | grep -oP 'Connected: \\K\\w+'); echo \"${mac}|${name}|${connected}\"; done"]
+        command: ["bash", "-c", "connected=$(bluetoothctl devices Connected 2>/dev/null | awk '{print $2}'); bluetoothctl devices Paired 2>/dev/null | awk '{print $2\" \"substr($0, index($0,$3))}' | while read -r mac name; do if printf '%s\\n' \"$connected\" | grep -qx \"$mac\"; then c=yes; else c=no; fi; echo \"${mac}|${name}|${c}\"; done"]
         stdout: SplitParser {
             onRead: data => {
                 var line = data.trim()
@@ -578,7 +496,7 @@ ShellRoot {
 
     Process {
         id: btScanProc
-        command: ["bash", "-c", "echo -e 'scan on\\nquit' | bluetoothctl 2>/dev/null; sleep 5; echo -e 'scan off\\nquit' | bluetoothctl 2>/dev/null; sleep 1; echo -e 'devices\\nquit' | bluetoothctl 2>/dev/null | grep '^Device' | while read -r line; do mac=$(echo \"$line\" | awk '{print $2}'); name=$(echo \"$line\" | cut -d' ' -f3-); info=$(echo -e \"info $mac\\nquit\" | bluetoothctl 2>/dev/null); paired=$(echo \"$info\" | grep -oP 'Paired: \\K\\w+'); if [ \"$paired\" != \"yes\" ] && [ -n \"$name\" ] && [ \"$name\" != \"$mac\" ]; then echo \"${mac}|${name}\"; fi; done"]
+        command: ["bash", "-c", "echo -e 'scan on\\nquit' | bluetoothctl 2>/dev/null; sleep 5; echo -e 'scan off\\nquit' | bluetoothctl 2>/dev/null; sleep 1; paired=$(bluetoothctl devices Paired 2>/dev/null | awk '{print $2}'); bluetoothctl devices 2>/dev/null | grep '^Device' | while read -r line; do mac=$(echo \"$line\" | awk '{print $2}'); name=$(echo \"$line\" | cut -d' ' -f3-); if ! printf '%s\\n' \"$paired\" | grep -qx \"$mac\" && [ -n \"$name\" ] && [ \"$name\" != \"$mac\" ]; then echo \"${mac}|${name}\"; fi; done"]
         stdout: SplitParser {
             onRead: data => {
                 var line = data.trim()
@@ -612,6 +530,66 @@ ShellRoot {
         interval: 1500
         repeat: false
         onTriggered: refreshBluetooth()
+    }
+
+    Timer {
+        interval: 1000
+        running: true
+        repeat: true
+        triggeredOnStart: true
+        onTriggered: { if (!mediaProc.running) mediaProc.running = true }
+    }
+
+    Process {
+        id: mediaProc
+        command: ["bash", "-c",
+            "status=$(playerctl --player=%any status 2>/dev/null); " +
+            "title=$(playerctl --player=%any metadata title 2>/dev/null); " +
+            "artist=$(playerctl --player=%any metadata artist 2>/dev/null); " +
+            "pos=$(playerctl --player=%any position 2>/dev/null | cut -d. -f1); " +
+            "len=$(playerctl --player=%any metadata mpris:length 2>/dev/null); " +
+            "len=$((len / 1000000)); " +
+            "[ -z \"$status\" ] && status=Stopped; " +
+            "printf '%s\\t%s\\t%s\\t%s\\t%s\\n' \"$status\" \"$title\" \"$artist\" \"${pos:-0}\" \"${len:-0}\""
+        ]
+        stdout: SplitParser {
+            onRead: data => {
+                var parts = data.trim().split("\t")
+                if (parts.length < 5) return
+                root.mediaStatus = parts[0]
+                root.mediaTitle = parts[1]
+                root.mediaArtist = parts[2]
+                root.mediaPosition = parseInt(parts[3]) || 0
+                root.mediaLength = parseInt(parts[4]) || 0
+            }
+        }
+    }
+
+    Timer {
+        interval: 1000
+        running: root.mediaStatus === "Playing"
+        repeat: true
+        onTriggered: {
+            if (root.mediaPosition < root.mediaLength) root.mediaPosition += 1
+        }
+    }
+
+    Process {
+        id: mediaPlayPauseProc
+        command: ["playerctl", "play-pause"]
+        onExited: { if (!mediaProc.running) mediaProc.running = true }
+    }
+
+    Process {
+        id: mediaNextProc
+        command: ["playerctl", "next"]
+        onExited: { if (!mediaProc.running) mediaProc.running = true }
+    }
+
+    Process {
+        id: mediaPrevProc
+        command: ["playerctl", "previous"]
+        onExited: { if (!mediaProc.running) mediaProc.running = true }
     }
 
     Bar {}
@@ -662,13 +640,6 @@ ShellRoot {
     IpcHandler { 
         target: "bluetooth"
         function toggle() { root.toggleBluetooth() }
-    }
-    IpcHandler {
-        target: "reloadColors"
-        function reload() {
-            walColorsProc.running = false
-            walColorsProc.running = true
-        }
     }
     IpcHandler {
         target: "clipboard"

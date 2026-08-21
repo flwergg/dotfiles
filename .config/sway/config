@@ -1,0 +1,50 @@
+# Sway configuration file
+set $mod Mod4
+
+# Include configuration files
+include ~/.config/sway/startup.conf
+include ~/.config/sway/keybinds.conf
+include ~/.config/sway/windowrules.conf
+
+# Output (monitor) configuration
+output eDP-1 resolution 1366x768@60Hz position 0,0 scale 1
+
+# Input configuration
+input "type:keyboard" {
+    xkb_layout latam
+}
+
+input "type:touchpad" {
+    natural_scroll enabled
+    tap enabled
+    dwt enabled
+    click_method clickfinger
+    drag_lock disabled
+    pointer_accel 0.5 
+}
+
+focus_follows_mouse yes
+mouse_warping output
+
+# Gaps y bordes
+gaps inner 2
+gaps outer 2
+default_border pixel 0
+default_floating_border pixel 0
+
+# --- SwayFX: efectos visuales ---
+blur enable
+blur_passes 2          
+blur_radius 5           
+
+corner_radius 10         
+
+shadows enable
+shadows_on_csd enable
+shadow_blur_radius 20
+shadow_color #0000004d
+
+default_dim_inactive 0.1
+dim_inactive_colors.unfocused #000000ff
+
+scratchpad_minimize disable
